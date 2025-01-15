@@ -11,3 +11,4 @@ class Food(models.Model):
     protein = models.FloatField()
     fats = models.FloatField()
     calories = models.IntegerField()
+  
