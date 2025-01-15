@@ -11,4 +11,25 @@ class Food(models.Model):
     protein = models.FloatField()
     fats = models.FloatField()
     calories = models.IntegerField()
+<<<<<<< HEAD
   
+=======
+
+class Supplements(models.Model):
+
+    def __str__(self):
+        return self.name
+
+    name = models.CharField(max_length=100)
+    carbs = models.FloatField()
+    protein = models.FloatField()
+    fats = models.FloatField()
+    calories = models.IntegerField()
+class CaloriesBurnt(models.Model):
+
+    def __str__(self):
+        return self.name
+
+    name = models.CharField(max_length=100)
+    caloriesburnt= models.IntegerField()
+>>>>>>> 7bdc1220c7ff05a55693e900be850357d50d4b65
