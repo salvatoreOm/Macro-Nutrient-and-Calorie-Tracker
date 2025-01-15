@@ -1,0 +1,28 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <form method="POST">
+            {% csrf_token %}
+            <select name="food_consumed" id="food_consumed">
+                {% for food in foods %}
+                <option value="{{food.name}}">{{food.name}}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <select name="supplement_consumed" id="supplement_consumed">
+                {% for supplement in supplementss %}
+                <option value="{{supplement.name}}">{{supplement.name}}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <select name="calorie_spent" id="calorie_spent">
+                {% for calorie_burnts in calorie_burnt %}
+                <option value="{{calorie_burnts.name}}">{{calorie_burnts.name}}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Add</button>
+        </form>
+    </body>
+</html>
