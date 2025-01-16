@@ -35,7 +35,7 @@ class CaloriesBurnt(models.Model):
 
 
 class Consume(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
     food_consumed = models.ForeignKey(Food, on_delete=models.CASCADE, null=True, blank=True)
     supplement_consumed = models.ForeignKey(Supplements, on_delete=models.CASCADE, null=True, blank=True)
     calorie_burnt = models.ForeignKey(CaloriesBurnt, on_delete=models.CASCADE, null=True, blank=True)

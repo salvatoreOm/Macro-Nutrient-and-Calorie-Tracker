@@ -152,11 +152,18 @@ https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js
                         calories += parseFloat(cells[4].innerHTML) || 0;
                     }
                 }
-                  // Round the totals to 2 decimal places
-                carbs = carbs.toFixed(2);
-                protein = protein.toFixed(2);
-                fats = fats.toFixed(2);
-                calories = calories.toFixed(2);
+        
+                // Preserve the raw values for calculations
+                var totalCarbs = carbs;
+                var totalProtein = protein;
+                var totalFats = fats;
+                var totalCalories = calories;
+        
+                // Round the totals to 2 decimal places for display
+                carbs = totalCarbs.toFixed(2);
+                protein = totalProtein.toFixed(2);
+                fats = totalFats.toFixed(2);
+                calories = totalCalories.toFixed(2);
         
                 // Update the totals row
                 document.getElementById('totalCarbs').innerHTML = '<b>' + carbs + ' (gm)</b>';
@@ -164,13 +171,13 @@ https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js
                 document.getElementById('totalFats').innerHTML = '<b>' + fats + ' (gm)</b>';
                 document.getElementById('totalCalories').innerHTML = '<b>' + calories + ' (Kcal)</b>';
         
-                var total = carbs + protein + fats + calories;
-                var carbsP = Math.round((carbs / total) * 100);
-                var proteinP = Math.round((protein / total) * 100);
-                var fatsP = Math.round((fats / total) * 100);
-                var caloriesP = Math.round((calories / total) * 100);
-        
-                // Pie chart data
+                // Calculate percentages based on raw values
+                var total = totalCarbs + totalProtein + totalFats + totalCalories;
+                var carbsP = Math.round((totalCarbs / total) * 100) || 0;
+                var proteinP = Math.round((totalProtein / total) * 100) || 0;
+                var fatsP = Math.round((totalFats / total) * 100) || 0;
+                var caloriesP = Math.round((totalCalories / total) * 100) || 0;
+                        // Pie chart data
                 var ctx = document.getElementById('myPieChart').getContext('2d');
                 var myPieChart = new Chart(ctx, {
                     type: 'pie',
@@ -182,22 +189,23 @@ https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js
                             'Calories (' + caloriesP + '%)'
                         ],
                         datasets: [{
-                            data: [carbs, protein, fats, calories],
+                            data: [totalCarbs, totalProtein, totalFats, totalCalories],
                             backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
                             hoverOffset: 4
                         }]
                     }
                 });
         
-                console.log("Total Carbs:", carbs);
-                console.log("Total Protein:", protein);
-                console.log("Total Fats:", fats);
-                console.log("Total Calories:", calories);
+                console.log("Total Carbs:", totalCarbs);
+                console.log("Total Protein:", totalProtein);
+                console.log("Total Fats:", totalFats);
+                console.log("Total Calories:", totalCalories);
             }
         
-            var calPer = calories / 2000 * 100;
+            var calPer = (totalCalories / 2000) * 100;
             document.getElementsByClassName("progress-bar")[0].setAttribute("style", "width:" + calPer + "%");
         </script>
         
+       
     </body>
 </html>

@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import Food, Supplements, CaloriesBurnt, Consume
 
-@login_required
 def index(request):
     if request.method == "POST":
         # Fetch the selected items from the form
@@ -17,10 +16,10 @@ def index(request):
         # Process calories burnt
         burntCal = CaloriesBurnt.objects.filter(name=calorie_spent).first() if calorie_spent else None
 
-        # Create a single entry with all the data
+        # Create a single entry with all the data (user field can be optional for anonymous users)
         if consumeF or consumeS or burntCal:
             Consume.objects.create(
-                user=request.user,
+                user=request.user if request.user.is_authenticated else None,  # Optional field for anonymous users
                 food_consumed=consumeF,
                 supplement_consumed=consumeS,
                 calorie_burnt=burntCal
@@ -30,7 +29,11 @@ def index(request):
         return redirect('index')  # Replace 'index' with your URL pattern name
 
     # Fetch data for the dropdowns and the consumed list
-    consumed_food = Consume.objects.filter(user=request.user)
+    consumed_food = (
+        Consume.objects.filter(user=request.user)
+        if request.user.is_authenticated
+        else Consume.objects.all()  # Display for all users
+    )
     foods = Food.objects.all()
     supplements = Supplements.objects.all()
     calorie_burnt = CaloriesBurnt.objects.all()
@@ -45,8 +48,8 @@ def index(request):
 
 
 def delete_consume(request, id):
+    consumed_food = Consume.objects.get(id=id)
     if request.method == 'POST':
-        consumed_food = Consume.objects.get(id=id, user=request.user)
         consumed_food.delete()
-        return redirect('index') 
+        return redirect('/')
     return render(request,'myapp/delete.html')
