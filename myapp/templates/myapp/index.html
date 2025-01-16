@@ -1,18 +1,17 @@
 <html>
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body>
-
-
         <div class="container">
+            <!-- Form Section -->
             <div class="row">
                 <div class="col-md-12">
                     <form method="POST">
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="foods_consumed"><b>Select Food</b></label>
-                            <!-- Single-select for foods -->
                             <select class="form-control" name="foods_consumed" id="foods_consumed">
                                 <option value="" selected disabled>Choose a food</option>
                                 {% for food in foods %}
@@ -20,10 +19,9 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="supplements_consumed"><b>Select Supplement</b></label>
-                            <!-- Single-select for supplements -->
                             <select class="form-control" name="supplements_consumed" id="supplements_consumed">
                                 <option value="" selected disabled>Choose a supplement</option>
                                 {% for supplement in supplementss %}
@@ -31,10 +29,9 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="calorie_spent"><b>Select Calories Burnt Activity</b></label>
-                            <!-- Single-select for calories burnt -->
                             <select class="form-control" name="calorie_spent" id="calorie_spent">
                                 <option value="" selected disabled>Choose an activity</option>
                                 {% for calorie in calorie_burnt %}
@@ -42,20 +39,21 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
-                        <button class="btn btn-success" type="submit">Add</button>
-                    </form>                                                    
+
+                        <button class="btn btn-success mt-3" type="submit">Add</button>
+                    </form>
                 </div>
             </div>
 
-            <div class="row">
+            <!-- Table and Pie Chart Section -->
+            <div class="row mt-4">
                 <div class="col-md-6">
                     <div>
                         <h4>Today's Consumption</h4>
                     </div>
-                    <table class="table table-striped">
+                    <table id="table" class="table table-striped">
                         <thead>
-                            <tr class="bg-primary text-white" style="background-color: blue !important; color: white !important;">
+                            <tr class="bg-primary text-white">
                                 <th>Consumed Items</th>
                                 <th>Carbs (gm)</th>
                                 <th>Protein (gm)</th>
@@ -67,36 +65,92 @@
                         </thead>
                         <tbody>
                             {% for c in consumed_food %}
-                            <tr class="bg-primary">
-                                <td>{{ c.food_consumed.name|default:"N/A"}}</td>
+                            <tr>
+                                <td>{{ c.food_consumed.name|default:"N/A" }}</td>
                                 <td>{{ c.food_consumed.carbs|default:"0" }}</td>
                                 <td>{{ c.food_consumed.protein|default:"0" }}</td>
                                 <td>{{ c.food_consumed.fats|default:"0" }}</td>
                                 <td>{{ c.food_consumed.calories|default:"0" }}</td>
-                                <td>{{ c.supplement_consumed.name|default:"0" }}</td>
-                                <td>{{ c.calorie_burnt.name|default:"0" }}</td>
+                                <td>{{ c.supplement_consumed.name|default:"N/A" }}</td>
+                                <td>{{ c.calorie_burnt.name|default:"N/A" }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="7">No data available.</td>
+                                <td colspan="7" class="text-center">No data available.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
+                        <tfoot>
+                            <tr class="bg-light">
+                                <td><b>Total</b></td>
+                                <td id="totalCarbs">0</td>
+                                <td id="totalProtein">0</td>
+                                <td id="totalFats">0</td>
+                                <td id="totalCalories">0</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
 
+                <!-- Pie Chart Section -->
                 <div class="col-md-5 offset-1">
-
+                    <h4>Consumption Breakdown</h4>
+                    <canvas id="myPieChart"></canvas>
                 </div>
             </div>
-
-
         </div>
 
-
+        <!-- Error Message -->
         {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <div class="alert alert-danger mt-3" role="alert">
+            {{ error }}
+        </div>
         {% endif %}
 
+        <!-- Script to Calculate and Log Totals and Display Chart -->
+        <script>
+            var table = document.getElementById("table");
+            var carbs = 0, protein = 0, fats = 0, calories = 0;
+
+            if (table) {
+                // Loop through table rows, skipping the header
+                for (var i = 1; i < table.rows.length - 1; i++) {
+                    var cells = table.rows[i].cells;
+                    // Only process rows with data (skip the empty row message)
+                    if (cells[1] && cells[2] && cells[3] && cells[4]) {
+                        carbs += parseFloat(cells[1].innerHTML) || 0;
+                        protein += parseFloat(cells[2].innerHTML) || 0;
+                        fats += parseFloat(cells[3].innerHTML) || 0;
+                        calories += parseFloat(cells[4].innerHTML) || 0;
+                    }
+                }
+
+                // Update the totals row
+                document.getElementById('totalCarbs').innerText = carbs;
+                document.getElementById('totalProtein').innerText = protein;
+                document.getElementById('totalFats').innerText = fats;
+                document.getElementById('totalCalories').innerText = calories;
+
+                // Pie chart data
+                var ctx = document.getElementById('myPieChart').getContext('2d');
+                var myPieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Carbs', 'Protein', 'Fats', 'Calories'],
+                        datasets: [{
+                            data: [carbs, protein, fats, calories],
+                            backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                            hoverOffset: 4
+                        }]
+                    }
+                });
+
+                console.log("Total Carbs:", carbs);
+                console.log("Total Protein:", protein);
+                console.log("Total Fats:", fats);
+                console.log("Total Calories:", calories);
+            }
+        </script>
     </body>
 </html>

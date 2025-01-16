@@ -5,28 +5,26 @@ from .models import Food, Supplements, CaloriesBurnt, Consume
 @login_required
 def index(request):
     if request.method == "POST":
-        # Fetch the selected items as lists from the form
-        foods_consumed = request.POST.getlist('foods_consumed[]')  # Handle multiple foods
-        supplements_consumed = request.POST.getlist('supplements_consumed[]')  # Handle multiple supplements
+        # Fetch the selected items from the form
+        food_consumed = request.POST.get('foods_consumed')  # Single food selection
+        supplement_consumed = request.POST.get('supplements_consumed')  # Single supplement selection
         calorie_spent = request.POST.get('calorie_spent')  # Single calorie-burnt entry
 
-        # Process foods
-        for food_name in foods_consumed:
-            food = Food.objects.filter(name=food_name).first()  # Retrieve Food object
-            if food:  # Check if food exists
-                Consume.objects.create(user=request.user, food_consumed=food)
-
-        # Process supplements
-        for supplement_name in supplements_consumed:
-            supplement = Supplements.objects.filter(name=supplement_name).first()  # Retrieve Supplement object
-            if supplement:  # Check if supplement exists
-                Consume.objects.create(user=request.user, supplement_consumed=supplement)
-
+        # Process food
+        consumeF = Food.objects.filter(name=food_consumed).first() if food_consumed else None
+        # Process supplement
+        consumeS = Supplements.objects.filter(name=supplement_consumed).first() if supplement_consumed else None
         # Process calories burnt
-        if calorie_spent:
-            calorie = CaloriesBurnt.objects.filter(name=calorie_spent).first()  # Retrieve CaloriesBurnt object
-            if calorie:  # Check if calorie entry exists
-                Consume.objects.create(user=request.user, calorie_burnt=calorie)
+        burntCal = CaloriesBurnt.objects.filter(name=calorie_spent).first() if calorie_spent else None
+
+        # Create a single entry with all the data
+        if consumeF or consumeS or burntCal:
+            Consume.objects.create(
+                user=request.user,
+                food_consumed=consumeF,
+                supplement_consumed=consumeS,
+                calorie_burnt=burntCal
+            )
 
         # Redirect to the same page to prevent form resubmission
         return redirect('index')  # Replace 'index' with your URL pattern name
