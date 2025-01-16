@@ -2,9 +2,31 @@
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="
+https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js
+"></script>
     </head>
     <body>
         <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <nav class="navbar navbar-dark bg-success">
+                        <span class="navbar-brand">Macro & Calorie Tracker</span>
+                    </nav>
+                </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <h4>Calorie Goal</h4>
+            <div class="row">
+                <div class="col-md-9 offset-1">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div>
+                    </div>
+                </div>
+            </div>
+            <br><br>
             <!-- Form Section -->
             <div class="row">
                 <div class="col-md-12">
@@ -47,11 +69,11 @@
 
             <!-- Table and Pie Chart Section -->
             <div class="row mt-4">
-                <div class="col-md-6">
+                <div class="col-md-7">
                     <div>
                         <h4>Today's Consumption</h4>
                     </div>
-                    <table id="table" class="table table-striped">
+                    <table id="table" class="table table-striped table-primary">
                         <thead>
                             <tr class="bg-primary text-white">
                                 <th>Consumed Items</th>
@@ -61,6 +83,7 @@
                                 <th>Calories (Kcal)</th>
                                 <th>Supplement</th>
                                 <th>Calories Burnt</th>
+                                <th>Remove Item</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,6 +96,7 @@
                                 <td>{{ c.food_consumed.calories|default:"0" }}</td>
                                 <td>{{ c.supplement_consumed.name|default:"N/A" }}</td>
                                 <td>{{ c.calorie_burnt.name|default:"N/A" }}</td>
+                                <td><a class="btn btn-danger" href="{% url 'delete' c.id %}">X</a></td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -94,8 +118,11 @@
                 </div>
 
                 <!-- Pie Chart Section -->
-                <div class="col-md-5 offset-1">
-                    <h4>Consumption Breakdown</h4>
+                <div class="col-md-5">
+                    <h4>Today's Consumption Breakdown:</h4>
+                    <div class="card-header text-white bg-success">
+                        <h4>Macronutrients Breakdown</h4>
+                    </div>
                     <canvas id="myPieChart"></canvas>
                 </div>
             </div>
@@ -112,7 +139,7 @@
         <script>
             var table = document.getElementById("table");
             var carbs = 0, protein = 0, fats = 0, calories = 0;
-
+        
             if (table) {
                 // Loop through table rows, skipping the header
                 for (var i = 1; i < table.rows.length - 1; i++) {
@@ -125,19 +152,35 @@
                         calories += parseFloat(cells[4].innerHTML) || 0;
                     }
                 }
-
+                  // Round the totals to 2 decimal places
+                carbs = carbs.toFixed(2);
+                protein = protein.toFixed(2);
+                fats = fats.toFixed(2);
+                calories = calories.toFixed(2);
+        
                 // Update the totals row
-                document.getElementById('totalCarbs').innerText = carbs;
-                document.getElementById('totalProtein').innerText = protein;
-                document.getElementById('totalFats').innerText = fats;
-                document.getElementById('totalCalories').innerText = calories;
-
+                document.getElementById('totalCarbs').innerHTML = '<b>' + carbs + ' (gm)</b>';
+                document.getElementById('totalProtein').innerHTML = '<b>' + protein + ' (gm)</b>';
+                document.getElementById('totalFats').innerHTML = '<b>' + fats + ' (gm)</b>';
+                document.getElementById('totalCalories').innerHTML = '<b>' + calories + ' (Kcal)</b>';
+        
+                var total = carbs + protein + fats + calories;
+                var carbsP = Math.round((carbs / total) * 100);
+                var proteinP = Math.round((protein / total) * 100);
+                var fatsP = Math.round((fats / total) * 100);
+                var caloriesP = Math.round((calories / total) * 100);
+        
                 // Pie chart data
                 var ctx = document.getElementById('myPieChart').getContext('2d');
                 var myPieChart = new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: ['Carbs', 'Protein', 'Fats', 'Calories'],
+                        labels: [
+                            'Carbs (' + carbsP + '%)', 
+                            'Protein (' + proteinP + '%)', 
+                            'Fats (' + fatsP + '%)', 
+                            'Calories (' + caloriesP + '%)'
+                        ],
                         datasets: [{
                             data: [carbs, protein, fats, calories],
                             backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
@@ -145,12 +188,16 @@
                         }]
                     }
                 });
-
+        
                 console.log("Total Carbs:", carbs);
                 console.log("Total Protein:", protein);
                 console.log("Total Fats:", fats);
                 console.log("Total Calories:", calories);
             }
+        
+            var calPer = calories / 2000 * 100;
+            document.getElementsByClassName("progress-bar")[0].setAttribute("style", "width:" + calPer + "%");
         </script>
+        
     </body>
 </html>

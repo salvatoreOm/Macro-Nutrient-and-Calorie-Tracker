@@ -42,3 +42,11 @@ def index(request):
         'supplementss': supplements,
         'calorie_burnt': calorie_burnt
     })
+
+
+def delete_consume(request, id):
+    if request.method == 'POST':
+        consumed_food = Consume.objects.get(id=id, user=request.user)
+        consumed_food.delete()
+        return redirect('index') 
+    return render(request,'myapp/delete.html')
