@@ -1,0 +1,1 @@
+It's a micro nutrient and calories tracker using Django.
